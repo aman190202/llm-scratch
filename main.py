@@ -7,10 +7,8 @@ class GPTDatasetV1(Dataset):
         self.input_ids = []
         self.target_ids = []
 
-        # Tokenize the entire text
         token_ids = tokenizer.encode(txt, allowed_special={"<|endoftext|>"})
-
-        # Use a sliding window to chunk the book into overlapping sequences of max_length
+        
         for i in range(0, len(token_ids) - max_length, stride):
             input_chunk = token_ids[i:i + max_length]
             target_chunk = token_ids[i + 1: i + max_length + 1]
@@ -45,31 +43,35 @@ def create_dataloader_v1(txt, batch_size=4, max_length=256,
 
     return dataloader
 
-if __name__=='__main__':
+
+
+
+
+def readText(fileName = "the-verdict.txt"):
     with open("the-verdict.txt", "r", encoding="utf-8") as f:
         raw_text = f.read()
-    dataloader = create_dataloader_v1(
-    raw_text, batch_size=1, max_length=4, stride=1, shuffle=False
-    )
 
+    return raw_text
+
+if __name__=='__main__':
+
+    # Step 1 : Import Raw Data
+    raw_text = readText("the-verdict.txt")
+
+    # Step 2 : Convert Raw Data to embeddings
+    
+    # Context Length
+    max_length = 3
+    dataloader = create_dataloader_v1(raw_text, batch_size=8, max_length=max_length,stride=max_length, shuffle=False)
     data_iter = iter(dataloader)
-    first_batch = next(data_iter)
+    inputs, targets = next(data_iter)
+    # print("Token IDs:\n", inputs)
+   #  print("\nInputs shape:\\n", inputs.shape)
+
 
     vocab_size = 50257
     output_dim = 256
     token_embedding_layer = torch.nn.Embedding(vocab_size, output_dim)
-
-    print(token_embedding_layer.shape())
-
-
-    max_length = 4
-    dataloader = create_dataloader_v1(
-        raw_text, batch_size=8, max_length=max_length,stride=max_length, shuffle=False)
-    data_iter = iter(dataloader)
-    inputs, targets = next(data_iter)
-    print("Token IDs:\n", inputs)
-    print("\nInputs shape:\\n", inputs.shape)
-
     token_embeddings = token_embedding_layer(inputs)
 
     context_length = max_length
@@ -77,3 +79,8 @@ if __name__=='__main__':
     pos_embeddings = pos_embedding_layer(torch.arange(context_length))
 
     input_embeddings = token_embeddings + pos_embeddings
+
+    # print(input_embeddings.shape) # A batch of 8 inputs, with length each of 4 ( Eg : " I am a good"), converted into an embedding of 256 dimensions - [8,4,256]
+
+
+    # Attention part begins
