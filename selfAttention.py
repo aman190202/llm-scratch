@@ -1,8 +1,5 @@
 import torch
-
-
-
-
+ 
 inputs = torch.tensor(
   [[0.43, 0.15, 0.89], # Your     (x^1)
    [0.55, 0.87, 0.66], # journey  (x^2)
@@ -13,42 +10,51 @@ inputs = torch.tensor(
 )
 
 # Dot product between each vector tells us how similar they are
-attention_scores = inputs @ inputs.T
-attention_weights = torch.softmax(attention_scores, dim=-1)
-all_context_vecs = attention_weights @ inputs # defined by z
+# attention_scores = inputs @ inputs.T
+# attention_weights = torch.softmax(attention_scores, dim=-1)
+# all_context_vecs = attention_weights @ inputs # defined by z
 
 
-# scaled dot product attention -- introduction of weight matrices that are trainable
-# w_q, w_k, w_v - query, key and value vector
+# # scaled dot product attention -- introduction of weight matrices that are trainable
+# # w_q, w_k, w_v - query, key and value vector
 
 
-x_2 = inputs[1]
-d_in = inputs.shape[1] # input embedding size
-d_out = 2 # usually the same with the input embedding side
+# x_2 = inputs[1]
+# d_in = inputs.shape[1] # input embedding size
+# d_out = 2 # usually the same with the input embedding side
 
 
-# W_query = torch.nn.Parameter(torch.rand(d_in, d_out), requires_grad=False)
-# W_key = torch.nn.Parameter(torch.rand(d_in, d_out), requires_grad=False)
-# W_value = torch.nn.Parameter(torch.rand(d_in, d_out), requires_grad=False)
+# # W_query = torch.nn.Parameter(torch.rand(d_in, d_out), requires_grad=False)
+# # W_key = torch.nn.Parameter(torch.rand(d_in, d_out), requires_grad=False)
+# # W_value = torch.nn.Parameter(torch.rand(d_in, d_out), requires_grad=False)
 
-# query_2 = x_2 @ W_query 
-# key_2 = x_2 @ W_key 
-# value_2 = x_2 @ W_value
+# # query_2 = x_2 @ W_query 
+# # key_2 = x_2 @ W_key 
+# # value_2 = x_2 @ W_value
 
-# keys = inputs @ W_key
-# values = inputs @ W_value
+# # keys = inputs @ W_key
+# # values = inputs @ W_value
 
-from main import SelfAttention_v1, SelfAttention_v2
-torch.manual_seed(123)
-sa_v1 = SelfAttention_v1(d_in, d_out)
-print(sa_v1(inputs))
-
-
-# the reason for normalization is to improve the training performace by avoiding small gradients
+# from main import SelfAttention_v1, SelfAttention_v2
+# torch.manual_seed(123)
+# sa_v1 = SelfAttention_v1(d_in, d_out)
+# print(sa_v1(inputs))
 
 
-# Causal Attention (masked attention) - hiding the future
+# # the reason for normalization is to improve the training performace by avoiding small gradients
 
-sa_v2 = SelfAttention_v2(d_in, d_out)
-queries = sa_v2.W_keys(inputs)
-keys = sav
+
+# # Causal Attention (masked attention) - hiding the future
+
+# sa_v2 = SelfAttention_v2(d_in, d_out)
+# queries = sa_v2.W_keys(inputs)
+# keys = sav
+
+inputs = torch.stack((inputs,inputs),dim=0)
+print(inputs.shape)
+
+from main import MultiHeadAttentionWrapper
+
+mh_attention = MultiHeadAttentionWrapper(3,2,6,0.0,2)
+context_vecs = mh_attention(inputs)
+print(context_vecs.shape)

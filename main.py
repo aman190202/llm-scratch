@@ -73,6 +73,16 @@ class CausalAttention(nn.Module):
         context_vec = attn_weights @ values
         return context_vec
 
+class MultiHeadAttentionWrapper(nn.Module):
+    def __init__(self,d_in,d_out,context_length, dropout, num_heads,qkv_bias=False):
+        super().__init__()
+        self.heads = nn.ModuleList(
+            [CausalAttention(d_in, d_out, context_length, dropout, qkv_bias) for _ in range(num_heads)]
+        )
+
+    def forward(self,X):
+        return torch.cat([head(X) for head in self.heads], dim = -1)
+        
 
 class GPTDatasetV1(Dataset):
     def __init__(self, txt, tokenizer, max_length, stride):
